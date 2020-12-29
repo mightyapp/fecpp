@@ -54,9 +54,16 @@ target_link_libraries( benchmark fecpp-static )
 add_executable( zfec test/zfec.cpp )
 target_link_libraries( zfec fecpp-static )
 
-install( TARGETS fecpp fecpp-static gen_test_vec test_recovery benchmark zfec pyfecpp
+install( TARGETS fecpp fecpp-static gen_test_vec test_recovery benchmark zfec
          ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin
          PUBLIC_HEADER DESTINATION include )
+
+if ( PYTHON2_FOUND )
+  install( TARGETS pyfecpp
+           ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin
+           PUBLIC_HEADER DESTINATION include )
+endif()
+
 install( FILES fec_hash.py test_decode.py
          PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
          DESTINATION bin )
