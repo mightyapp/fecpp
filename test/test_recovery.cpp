@@ -2,7 +2,6 @@
 #include <fstream>
 #include <stdexcept>
 #include <vector>
-#include <boost/algorithm/string.hpp>
 
 using fecpp::byte;
 
@@ -154,6 +153,32 @@ bool check_recovery(byte k, byte n, const std::string& hex_input,
    return true;
    }
 
+
+template < class ContainerT >
+void tokenize(ContainerT& tokens, const std::string& str, 
+              const std::string& delimiters = " ", bool trimEmpty = false)
+{
+   std::string::size_type pos, lastPos = 0, length = str.length();
+
+   using value_type = typename ContainerT::value_type;
+   using size_type  = typename ContainerT::size_type;
+
+   while(lastPos < length + 1)
+   {
+      pos = str.find_first_of(delimiters, lastPos);
+      if(pos == std::string::npos)
+      {
+         pos = length;
+      }
+
+      if(pos != lastPos || !trimEmpty)
+         tokens.push_back(value_type(str.data()+lastPos,
+               (size_type)pos-lastPos ));
+
+      lastPos = pos + 1;
+   }
+}
+
 int main()
    {
    std::ifstream testfile("tests.txt");
@@ -179,7 +204,7 @@ int main()
          continue;
 
       std::vector<std::string> inputs;
-      boost::split(inputs, line, boost::is_any_of(", "));
+      tokenize(inputs, line, std::string(", "));
 
       int k = 0, n = 0;
       std::string input;
@@ -191,7 +216,7 @@ int main()
             continue;
 
          std::vector<std::string> name_val;
-         boost::split(name_val, inputs[i], boost::is_any_of("="));
+         tokenize(name_val, inputs[i], std::string("="));
 
          if(name_val.size() != 2)
             throw std::invalid_argument("Bad test line " + inputs[i]);
