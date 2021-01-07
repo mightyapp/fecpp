@@ -5,7 +5,12 @@
  */
 
 #include "fecpp.h"
-#include <emmintrin.h>
+
+#if defined(FECPP_IS_X86)
+  #include <emmintrin.h>
+#else
+  #include "sse2neon.h"
+#endif
 
 namespace fecpp {
 
