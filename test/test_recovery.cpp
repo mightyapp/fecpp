@@ -2,6 +2,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <vector>
+#include <string>
 
 using fecpp::byte;
 

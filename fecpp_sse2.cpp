@@ -8,6 +8,10 @@
 
 #if defined(FECPP_IS_X86)
   #include <emmintrin.h>
+  #if defined (_MSC_VER)
+	#include <immintrin.h> // for lzcnt
+	#include <xmmintrin.h> // for mm_prefetch
+  #endif
 #else
   #include "sse2neon.h"
 #endif
@@ -18,8 +22,11 @@ size_t addmul_sse2(uint8_t z[], const uint8_t x[], uint8_t y, size_t size)
    {
    const __m128i polynomial = _mm_set1_epi8(0x1D);
 
-   const size_t y_bits = 32 - __builtin_clz(y);
-
+#if defined(_MSC_VER)
+	const size_t y_bits = 32 - _lzcnt_u32(y);
+#else
+	const size_t y_bits = 32 - __builtin_clz(y);
+#endif
    const size_t consumed = size - (size % 64);
 
    // unrolled out to cache line size
@@ -35,11 +42,15 @@ size_t addmul_sse2(uint8_t z[], const uint8_t x[], uint8_t y, size_t size)
       __m128i z_3 = _mm_load_si128((const __m128i*)(z + 32));
       __m128i z_4 = _mm_load_si128((const __m128i*)(z + 48));
 
+
+      const char* pX = reinterpret_cast<const char*>(x);
+      const char* pZ = reinterpret_cast<const char*>(z);
+
       // prefetch next two x and z blocks
-      _mm_prefetch(x + 64, _MM_HINT_T0);
-      _mm_prefetch(z + 64, _MM_HINT_T0);
-      _mm_prefetch(x + 128, _MM_HINT_T1);
-      _mm_prefetch(z + 128, _MM_HINT_T1);
+      _mm_prefetch(pX + 64, _MM_HINT_T0);
+      _mm_prefetch(pZ + 64, _MM_HINT_T0);
+      _mm_prefetch(pX + 128, _MM_HINT_T1);
+      _mm_prefetch(pZ + 128, _MM_HINT_T1);
 
       if(y & 0x01)
          {
